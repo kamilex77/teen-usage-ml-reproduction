@@ -1,0 +1,40 @@
+---
+title: "SET TITLE"
+author: "SET AUTHORS"
+date: "2026-05-04"
+output: 
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float:
+      toc_collapsed: true
+    toc_depth: 6
+    number_sections: false
+    theme: readable
+  pdf_document:
+    toc: true
+    toc_depth: '5'
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(dplyr)
+library(readr)
+
+```
+
+```{r download data from google drive}
+if (!requireNamespace("googledrive", quietly = TRUE)) {
+  install.packages("googledrive")
+}
+
+library(googledrive)
+
+file_id <- "1mJ-iLbHWiaPLHltrnIwjfNcbtW_4u8fd"
+url <- paste0("https://drive.google.com/uc?export=download&id=", file_id)
+
+df <- read.csv(url)
+```
+
