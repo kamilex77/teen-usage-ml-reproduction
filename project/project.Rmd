@@ -1,6 +1,6 @@
 ---
-title: "SET TITLE"
-author: "SET AUTHORS"
+title: "Teen Smartphone Usage and Addiction Impact Dataset"
+author: "Aleksandra Dobosz, Aleksandra Engel, Adam Gonet, Kamil Laskowski"
 date: "2026-05-04"
 output: 
   html_document:
@@ -18,7 +18,7 @@ output:
 ---
 
 
-# Teen Smartphone Usage and Addiction Impact Dataset - Machine Learning 2 Regression project
+# Teen Smartphone Usage and Addiction Impact Dataset
 
 
 ## About the Dataset
@@ -31,7 +31,7 @@ The dataset captures multiple aspects of teenage behavior, including **addiction
 
 ## Column Descriptions
 
-### Demographic Information
+Demographic Information
 - **ID**: Unique identifier for each student  
 - **Name**: Name of the student  
 - **Age**: Age of the teenager  
@@ -39,32 +39,32 @@ The dataset captures multiple aspects of teenage behavior, including **addiction
 - **Location**: Geographic location  
 - **School_Grade**: Current academic or level  
 
-### Smartphone Usage & Time Distribution
+Smartphone Usage & Time Distribution
 - **Daily_Usage_Hours**: Average smartphone usage per day (hours)  
 - **Weekend_Usage_Hours**: Average smartphone usage on weekends  
 - **Screen_Time_Before_Bed**: Screen time before going to sleep  
 - **Phone_Checks_Per_Day**: Number of times the phone is checked daily  
 - **Apps_Used_Daily**: Number of apps used per day  
 
-### Activity-Based Usage
+Activity-Based Usage
 - **Time_on_Social_Media**: Hours spent on social media platforms  
 - **Time_on_Gaming**: Hours spent on mobile gaming  
 - **Time_on_Education**: Hours spent on educational activities  
 - **Phone_Usage_Purpose**: Primary purpose of smartphone usage  
 
-### Health & Lifestyle Indicators
+Health & Lifestyle Indicators
 - **Sleep_Hours**: Average hours of sleep per day  
 - **Exercise_Hours**: Time spent on physical exercise  
 - **Anxiety_Level**: Indicator of anxiety level  
 - **Depression_Level**: Indicator of depression level  
 - **Self_Esteem**: Self-esteem score  
 
-### Social & Family Factors
+Social & Family Factors
 - **Social_Interactions**: Level of in-person social interaction  
 - **Family_Communication**: Quality or frequency of communication with family  
 - **Parental_Control**: Level of parental monitoring or restrictions  
 
-### Outcome Variables
+Outcome Variables
 - **Academic_Performance**: Indicator of academic performance  
 - **Addiction_Level**: Level of smartphone addiction (target variable)
 
@@ -89,19 +89,21 @@ library(ggplot2)
 library(e1071)
 library(gridExtra)
 library(patchwork)
+library(googledrive)
+
+if (!requireNamespace("googledrive", quietly = TRUE)) {install.packages("googledrive")}
+if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
+if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+
+library(dplyr)
+library(ggplot2)
 
 ```
 
 ```{r download data from google drive}
-if (!requireNamespace("googledrive", quietly = TRUE)) {
-  install.packages("googledrive")
-}
-
-library(googledrive)
-
+#path to google file with data 
 file_id <- "1mJ-iLbHWiaPLHltrnIwjfNcbtW_4u8fd"
 url <- paste0("https://drive.google.com/uc?export=download&id=", file_id)
-
 df <- read.csv(url)
 ```
 
@@ -127,6 +129,7 @@ sum(duplicated(df))
 # Count missing values in each column
 colSums(is.na(df))
 ```
+
 Now as we have don't have missing values, we are going to remove unnecessary columns and test-train split.
 
 # Section 2: Data Cleaning and Preprocessing
@@ -139,13 +142,12 @@ Columns like 'Name' and 'ID' don't contribute to predictions since they are just
 
 ```{r remove columns}
 # Remove selected columns using dplyr
-df <- df %>%
-  select(-Name, -ID)
+df <- df %>% select(-Name, -ID)
 ```
 
 ## Step 2: Train-Test Split
 
-We split the data into 80% training and 20% testing sets. Using random_state=123 ensures reproducibility.
+We split the data into 80% training and 20% testing sets. Using random_state=123, which ensures reproducibility.
 
 ```{r train test split}
 set.seed(123)
@@ -194,22 +196,22 @@ Based on the above analysis, we need to apply one-hot encoding to School_Grade, 
 This section analyzes relationships between variables, target variable distribution, and statistical significance tests.
 
 ```{r correlations}
-# Select only numeric columns
+#only numeric columns
 numeric_df <- df_train[sapply(df_train, is.numeric)]
 
-# Calculate Kendall correlation matrix (robust to non-normal distributions)
+#calculate Kendall correlation matrix, because it's robust to non-normal distributions
 corr <- cor(numeric_df, method = "kendall", use = "complete.obs")
 
-# Print correlation matrix
+#print correlation matrix
 corr
 
-# Convert correlation matrix to long format
+#convert correlation matrix to long format
 corr_melt <- melt(corr)
 
-# Plot heatmap
+#heatmap
 ggplot(corr_melt, aes(Var1, Var2, fill = value)) +
   geom_tile(color = "white") +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+  scale_fill_viridis_c() +
   theme_minimal() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1)
@@ -232,7 +234,7 @@ Correlation analysis shows that addiction level is most strongly associated with
 ### Dependent Variable Analysis
 
 ```{r target distribution}
-# Summary statistics for target variable
+#summary statistics for target variable
 cat("Addiction_Level Statistics:\n")
 
 cat(" Mean:", mean(df_train$Addiction_Level, na.rm = TRUE), "\n")
@@ -243,9 +245,9 @@ cat(" Max:", max(df_train$Addiction_Level, na.rm = TRUE), "\n")
 cat(" Skewness:", skewness(df_train$Addiction_Level, na.rm = TRUE), "\n")
 cat(" Kurtosis:", kurtosis(df_train$Addiction_Level, na.rm = TRUE), "\n")
 
-# Histogram of target variable
+#histogram of target variable
 ggplot(df_train, aes(x = Addiction_Level)) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "black") +
+  geom_histogram(bins = 30, fill = "#21918c", color = "#21918c") +
   labs(
     title = "Histogram - Addiction_Level",
     x = "Addiction Level",
@@ -253,7 +255,7 @@ ggplot(df_train, aes(x = Addiction_Level)) +
   ) +
   theme_minimal()
 
-# Skewness of target variable
+#skewness of target variable
 skewness(df_train$Addiction_Level, na.rm = TRUE)
 ```
 
@@ -262,15 +264,15 @@ Let's try log and square root transformations to improve normality
 ```{r transformations}
 # Histogram - original data
 p1 <- ggplot(df_train, aes(x = Addiction_Level)) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "black") +
+  geom_histogram(bins = 30, fill = "#21918c", color = "#21918c") +
   labs(title = "Histogram - Addiction_Level") +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 12)
 
 # Histogram - log transformed
 p2 <- ggplot(df_train, aes(x = log(Addiction_Level))) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "black") +
+  geom_histogram(bins = 30, fill = "#21918c", color = "#21918c") +
   labs(title = "Histogram - log(Addiction_Level)") +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 12)
 
 # Arrange plots side by side
 grid.arrange(p1, p2, ncol = 2)
@@ -281,15 +283,15 @@ Log scaling doesn't improve the distribution of target variable - let's try squa
 ```{r transformations2}
 # Histogram - original data
 p1 <- ggplot(df_train, aes(x = Addiction_Level)) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "black") +
+  geom_histogram(bins = 30, fill = "#21918c", color = "#21918c") +
   labs(title = "Histogram - Addiction_Level") +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 12)
 
 # Histogram - sqrt transformed data
 p2 <- ggplot(df_train, aes(x = sqrt(Addiction_Level))) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "black") +
+  geom_histogram(bins = 30, fill = "#21918c", color = "#21918c") +
   labs(title = "Histogram - sqrt(Addiction_Level)") +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 12)
 
 # Arrange plots side by side
 grid.arrange(p1, p2, ncol = 2)
@@ -329,10 +331,10 @@ The target variable Addiction_Level will be modeled in its original scale. Appli
 ```{r violin}
 # Violin plot: distribution by school grade
 ggplot(df_train, aes(x = School_Grade, y = Addiction_Level)) +
-  geom_violin(fill = "steelblue", color = "black") +
-  geom_boxplot(width = 0.1, outlier.size = 1, alpha = 0.5) +
+  geom_violin(fill = "#7ad151", color = "#7ad151") +
+  geom_boxplot(width = 0.1, outlier.size = 1, alpha = 0.2) +
   labs(title = "Distribution of Addiction_Level by school grade") +
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 12) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
 # Perform Kruskal-Wallis test
@@ -348,28 +350,28 @@ The results indicate that there is no significant difference between addiction l
 ```{r barplot}
 # Barplot: mean Addiction_Level by Gender with SD error bars
 ggplot(df_train, aes(x = Gender, y = Addiction_Level)) +
-  stat_summary(fun = mean, geom = "bar", fill = "steelblue") +
+  stat_summary(fun = mean, geom = "bar", fill = "#fde725") +
   stat_summary(fun.data = mean_sdl, geom = "errorbar", width = 0.2) +
   labs(
     title = "Addiction Level by Gender",
     x = "Gender",
     y = "Addiction_Level"
   ) +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 12)
 ```
 Addiction level seems to be consistent across all genders - there are no significant differences based on the plot output.
 
 ```{r histogram}
 # Histogram with density curve (KDE equivalent)
 ggplot(df_train, aes(x = Daily_Usage_Hours)) +
-  geom_histogram(aes(y = ..density..), bins = 20, fill = "steelblue", color = "black") +
-  geom_density(color = "red", linewidth = 1) +
+  geom_histogram(aes(y = ..density..), bins = 20, fill = "#fde725", color = "yellow") +
+  geom_density(color = "#440154", linewidth = 1) +
   labs(
     title = "Distribution of Daily Screen Time",
     x = "Daily Usage Hours",
     y = "Density"
   ) +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 12)
 ```
 The plot shows that most people spend around 4 to 6 hours per day using screens. The highest frequency is in this range, while very low and very high screen time values occur less often. Overall, daily screen time is concentrated around moderate usage levels, with only a few users spending more than 8 hours per day.
 
@@ -393,27 +395,20 @@ grouped_df <- df_train %>%
 
 # Line plot
 ggplot(grouped_df, aes(x = Age, y = Family_Communication)) +
-  geom_line(color = "steelblue") +
-  geom_point(color = "black") +
+  geom_line(color = "#2a788e") +
+  geom_point(color = "#2a788e") +
   scale_x_continuous(breaks = seq(min(grouped_df$Age), max(grouped_df$Age), by = 1)) +
   labs(
     title = "Line Plot: Age vs Family Communication",
     x = "Age",
     y = "Average Family Communication Score"
   ) +
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 12) +
   theme(panel.grid.minor = element_blank())
 ```
 The line plot shows how average family communication changes with age. The score increases slightly from age 13 to 16 and reaches its highest value at age 17. After that, it decreases for ages 18 and 19. Overall, family communication appears relatively stable across ages, with a small peak in mid-to-late adolescence.
 
 ```{r plot 2}
-# Install packages if needed
-if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
-if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
-
-library(dplyr)
-library(ggplot2)
-
 # Group by Age and compute mean Depression_Level
 grouped_df <- df_train %>%
   group_by(Age) %>%
@@ -421,15 +416,15 @@ grouped_df <- df_train %>%
 
 # Line plot with x-axis ticks every 1 unit
 ggplot(grouped_df, aes(x = Age, y = Depression_Level)) +
-  geom_line(color = "steelblue") +
-  geom_point(color = "black") +
+  geom_line(color = "#22a884") +
+  geom_point(color = "#22a884") +
   scale_x_continuous(breaks = seq(min(grouped_df$Age), max(grouped_df$Age), by = 1)) +
   labs(
     title = "Line Plot: Age vs Depression Level",
     x = "Age",
     y = "Average Depression Level"
   ) +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 12)
 ```
 Based on the plot, depression levels appear to increase between ages 13 and 15, followed by a decline at age 16. Afterward, there is a rise in depression levels up to age 18, which then decreases at age 19
 
@@ -447,6 +442,7 @@ purpose_counts <- filtered_df %>%
 ggplot(purpose_counts, aes(x = "", y = n, fill = Phone_Usage_Purpose)) +
   geom_bar(stat = "identity", width = 1) +
   coord_polar(theta = "y") +
+  scale_fill_viridis_d()+
   labs(
     title = paste("Phone Usage Purpose Distribution for", usage_hour, "Daily Usage Hours"),
     x = "",
@@ -465,8 +461,8 @@ grouped_df <- df_train %>%
 
 # Line plot
 ggplot(grouped_df, aes(x = Exercise_Hours, y = Addiction_Level)) +
-  geom_line(color = "steelblue") +
-  geom_point(color = "black") +
+  geom_line(color = "#414487") +
+  geom_point(color = "#414487") +
   labs(
     title = "Line Plot: Exercise Hours vs Addiction Level",
     x = "Exercise Hours",
@@ -485,8 +481,8 @@ grouped_df <- df_train %>%
 
 # Line plot
 ggplot(grouped_df, aes(x = Time_on_Social_Media, y = Academic_Performance)) +
-  geom_line(color = "steelblue") +
-  geom_point(color = "black") +
+  geom_line(color = "#7ad151") +
+  geom_point(color = "#7ad151") +
   labs(
     title = "Time on Social Media vs Academic Performance",
     x = "Time on Social Media (hours)",
@@ -501,7 +497,7 @@ This graph suggests that time on social media doesn’t have a clear or consiste
 ```{r plot 6}
 # Violin plot: Addiction_Level by Parental_Control
 ggplot(df_train, aes(x = factor(Parental_Control), y = Addiction_Level)) +
-  geom_violin(fill = "steelblue", color = "black") +
+  geom_violin(fill = "#1fa187", color = "#1fa187") +
   geom_boxplot(width = 0.1, alpha = 0.4) +
   labs(
     title = "Distribution of Addiction_Level by Parental Control",
@@ -519,9 +515,9 @@ num_df <- df_train %>% select(where(is.numeric))
 # Create list of plots
 plot_list <- lapply(names(num_df), function(col) {
   ggplot(num_df, aes(x = .data[[col]])) +
-    geom_histogram(bins = 20, fill = "steelblue", color = "black") +
+    geom_histogram(bins = 20, fill = "#b5de2b", color = "#b5de2b") +
     labs(title = col) +
-    theme_minimal(base_size = 10)
+    theme_minimal(base_size = 6)
 })
 
 # Combine plots
