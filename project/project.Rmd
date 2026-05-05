@@ -15,66 +15,85 @@ output:
     toc: true
     toc_depth: '5'
     highlight: tango
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
-
 
 # Teen Smartphone Usage and Addiction Impact Dataset
 
-
 ## About the Dataset
 
-This dataset, sourced from Kaggle, focuses on understanding **smartphone usage patterns among teenagers** and the impact of excessive phone use on their **academic performance, mental health, and daily lifestyle**. With the rapid increase in smartphone dependency among adolescents, it has become important to study how usage habits influence well-being and performance.
+This dataset, sourced from Kaggle, focuses on understanding **smartphone
+usage patterns among teenagers** and the impact of excessive phone use
+on their **academic performance, mental health, and daily lifestyle**.
+With the rapid increase in smartphone dependency among adolescents, it
+has become important to study how usage habits influence well-being and
+performance.
 
-The dataset captures multiple aspects of teenage behavior, including **addiction levels, time distribution across activities, sleep patterns, social interactions, and mental health indicators**. From our perspective, we aim to build regression models to examine which factors have the greatest impact on smartphone addiction levels.
+The dataset captures multiple aspects of teenage behavior, including
+**addiction levels, time distribution across activities, sleep patterns,
+social interactions, and mental health indicators**. From our
+perspective, we aim to build regression models to examine which factors
+have the greatest impact on smartphone addiction levels.
 
----
+------------------------------------------------------------------------
 
 ## Column Descriptions
 
-Demographic Information
-- **ID**: Unique identifier for each student  
-- **Name**: Name of the student  
-- **Age**: Age of the teenager  
-- **Gender**: Gender of the student  
-- **Location**: Geographic location  
-- **School_Grade**: Current academic or level  
+Demographic Information - **ID**: Unique identifier for each student\
+- **Name**: Name of the student\
+- **Age**: Age of the teenager\
+- **Gender**: Gender of the student\
+- **Location**: Geographic location\
+- **School_Grade**: Current academic or level
 
-Smartphone Usage & Time Distribution
-- **Daily_Usage_Hours**: Average smartphone usage per day (hours)  
-- **Weekend_Usage_Hours**: Average smartphone usage on weekends  
-- **Screen_Time_Before_Bed**: Screen time before going to sleep  
-- **Phone_Checks_Per_Day**: Number of times the phone is checked daily  
-- **Apps_Used_Daily**: Number of apps used per day  
+Smartphone Usage & Time Distribution - **Daily_Usage_Hours**: Average
+smartphone usage per day (hours)\
+- **Weekend_Usage_Hours**: Average smartphone usage on weekends\
+- **Screen_Time_Before_Bed**: Screen time before going to sleep\
+- **Phone_Checks_Per_Day**: Number of times the phone is checked daily\
+- **Apps_Used_Daily**: Number of apps used per day
 
-Activity-Based Usage
-- **Time_on_Social_Media**: Hours spent on social media platforms  
-- **Time_on_Gaming**: Hours spent on mobile gaming  
-- **Time_on_Education**: Hours spent on educational activities  
-- **Phone_Usage_Purpose**: Primary purpose of smartphone usage  
+Activity-Based Usage - **Time_on_Social_Media**: Hours spent on social
+media platforms\
+- **Time_on_Gaming**: Hours spent on mobile gaming\
+- **Time_on_Education**: Hours spent on educational activities\
+- **Phone_Usage_Purpose**: Primary purpose of smartphone usage
 
-Health & Lifestyle Indicators
-- **Sleep_Hours**: Average hours of sleep per day  
-- **Exercise_Hours**: Time spent on physical exercise  
-- **Anxiety_Level**: Indicator of anxiety level  
-- **Depression_Level**: Indicator of depression level  
-- **Self_Esteem**: Self-esteem score  
+Health & Lifestyle Indicators - **Sleep_Hours**: Average hours of sleep
+per day\
+- **Exercise_Hours**: Time spent on physical exercise\
+- **Anxiety_Level**: Indicator of anxiety level\
+- **Depression_Level**: Indicator of depression level\
+- **Self_Esteem**: Self-esteem score
 
-Social & Family Factors
-- **Social_Interactions**: Level of in-person social interaction  
-- **Family_Communication**: Quality or frequency of communication with family  
-- **Parental_Control**: Level of parental monitoring or restrictions  
+Social & Family Factors - **Social_Interactions**: Level of in-person
+social interaction\
+- **Family_Communication**: Quality or frequency of communication with
+family\
+- **Parental_Control**: Level of parental monitoring or restrictions
 
-Outcome Variables
-- **Academic_Performance**: Indicator of academic performance  
+Outcome Variables - **Academic_Performance**: Indicator of academic
+performance\
 - **Addiction_Level**: Level of smartphone addiction (target variable)
 
----
+------------------------------------------------------------------------
 
 ## Problem Description
 
-Smartphone use has become an essential part of teenagers’ daily lives, but excessive usage may lead to addiction and negatively affect mental health, sleep patterns, social interactions, and academic performance. Smartphone addiction among adolescents is an increasingly important social and psychological issue. The goal of this project is to use regression analysis to identify which behavioral, lifestyle, and psychological factors most strongly influence the level of smartphone addiction. Understanding these relationships can support early intervention and promote healthier smartphone usage habits among teenagers.
+Smartphone use has become an essential part of teenagers’ daily lives,
+but excessive usage may lead to addiction and negatively affect mental
+health, sleep patterns, social interactions, and academic performance.
+Smartphone addiction among adolescents is an increasingly important
+social and psychological issue. The goal of this project is to use
+regression analysis to identify which behavioral, lifestyle, and
+psychological factors most strongly influence the level of smartphone
+addiction. Understanding these relationships can support early
+intervention and promote healthier smartphone usage habits among
+teenagers.
 
----
+------------------------------------------------------------------------
 
 # Importing neccessary libraries
 
@@ -109,7 +128,9 @@ df <- read.csv(url)
 
 # Section 1: Data Loading and Initial Exploration
 
-In this section, we load the dataset and perform initial exploratory analysis to understand the data structure, identify potential issues, and assess data quality.
+In this section, we load the dataset and perform initial exploratory
+analysis to understand the data structure, identify potential issues,
+and assess data quality.
 
 ```{r info}
 # Print dataset dimensions (rows and columns)
@@ -130,15 +151,19 @@ sum(duplicated(df))
 colSums(is.na(df))
 ```
 
-Now as we have don't have missing values, we are going to remove unnecessary columns and test-train split.
+Now as we have don't have missing values, we are going to remove
+unnecessary columns and test-train split.
 
 # Section 2: Data Cleaning and Preprocessing
 
-Now we'll remove unnecessary columns and split the data into training and test sets. Then, we'll apply one-hot encoding to categorical variables.
+Now we'll remove unnecessary columns and split the data into training
+and test sets. Then, we'll apply one-hot encoding to categorical
+variables.
 
 ### Step 1: Remove non-informative columns
 
-Columns like 'Name' and 'ID' don't contribute to predictions since they are just identifiers. We'll drop them to reduce noise.
+Columns like 'Name' and 'ID' don't contribute to predictions since they
+are just identifiers. We'll drop them to reduce noise.
 
 ```{r remove columns}
 # Remove selected columns using dplyr
@@ -147,7 +172,8 @@ df <- df %>% select(-Name, -ID)
 
 ### Step 2: Train-Test Split
 
-We split the data into 80% training and 20% testing sets. Using random_state=123, which ensures reproducibility.
+We split the data into 80% training and 20% testing sets. Using
+random_state=123, which ensures reproducibility.
 
 ```{r train test split}
 set.seed(123)
@@ -170,7 +196,8 @@ cat("SHAPE:", dim(df_test), "\n")
 
 ### Step 3: Analyze data types and cardinality
 
-Let's examine the data types and unique values for each column to identify categorical variables that need encoding.
+Let's examine the data types and unique values for each column to
+identify categorical variables that need encoding.
 
 ```{r data structure}
 # Structure of dataset
@@ -189,11 +216,14 @@ df_train <- df_train %>% select(-Location)
 # Unique values
 unique(df_train$Phone_Usage_Purpose)
 ```
-Based on the above analysis, we need to apply one-hot encoding to School_Grade, Gender and Phone_Usage_Purpose
+
+Based on the above analysis, we need to apply one-hot encoding to
+School_Grade, Gender and Phone_Usage_Purpose
 
 # Section 3: Exploratory Data Analysis
 
-This section analyzes relationships between variables, target variable distribution, and statistical significance tests.
+This section analyzes relationships between variables, target variable
+distribution, and statistical significance tests.
 
 ```{r correlations}
 #only numeric columns
@@ -223,13 +253,18 @@ ggplot(corr_melt, aes(Var1, Var2, fill = value)) +
   )
 ```
 
-- < 0.2 – no linear correlation
-- 0.2 – 0.4 – low linear correlation
-- 0.4 -0.7 – mid linear correlation
-- 0.7 – 0.9 – strong linear correlation
-- \> 0.9 – very strong linear correlation
+-   \< 0.2 – no linear correlation
+-   0.2 – 0.4 – low linear correlation
+-   0.4 -0.7 – mid linear correlation
+-   0.7 – 0.9 – strong linear correlation
+-   \> 0.9 – very strong linear correlation
 
-Correlation analysis shows that addiction level is most strongly associated with usage-intensity features, especially Daily_Usage_Hours, as well as Apps_Used_Daily, Time_on_Social_Media, Phone_Checks_Per_Day and Time_on_Gaming. A negative correlation with Sleep_Hours suggests that higher addiction levels are linked to reduced sleep, while most other variables show only weak relationships.
+Correlation analysis shows that addiction level is most strongly
+associated with usage-intensity features, especially Daily_Usage_Hours,
+as well as Apps_Used_Daily, Time_on_Social_Media, Phone_Checks_Per_Day
+and Time_on_Gaming. A negative correlation with Sleep_Hours suggests
+that higher addiction levels are linked to reduced sleep, while most
+other variables show only weak relationships.
 
 ### Dependent Variable Analysis
 
@@ -278,7 +313,8 @@ p2 <- ggplot(df_train, aes(x = log(Addiction_Level))) +
 grid.arrange(p1, p2, ncol = 2)
 ```
 
-Log scaling doesn't improve the distribution of target variable - let's try square root.
+Log scaling doesn't improve the distribution of target variable - let's
+try square root.
 
 ```{r transformations2}
 # Histogram - original data
@@ -324,7 +360,12 @@ cat(" Skewness:", skew_log, "\n")
 cat(" Kurtosis:", kurt_log, "\n")
 ```
 
-The target variable Addiction_Level will be modeled in its original scale. Applied transformations such as square root and logarithm increased skewness and kurtosis and even less normal distribution. Since most machine learning models do not require the target variable to follow a normal distribution, keeping the original form is the most appropriate choice.
+The target variable Addiction_Level will be modeled in its original
+scale. Applied transformations such as square root and logarithm
+increased skewness and kurtosis and even less normal distribution. Since
+most machine learning models do not require the target variable to
+follow a normal distribution, keeping the original form is the most
+appropriate choice.
 
 ### Statistical Analysis
 
@@ -343,9 +384,12 @@ kruskal_result <- kruskal.test(Addiction_Level ~ School_Grade, data = df_train)
 # Print p-value
 cat(sprintf("Kruskal-Wallis p-value = %.5f\n", kruskal_result$p.value))
 ```
-To statistically verify the visual differences observed in the violin plot, we applied Kruskal–Wallis.
-This non-parametric test was chosen due to the non-normal distribution of the target variable and the presence of multiple groups.
-The results indicate that there is no significant difference between addiction level across school grades.
+
+To statistically verify the visual differences observed in the violin
+plot, we applied Kruskal–Wallis. This non-parametric test was chosen due
+to the non-normal distribution of the target variable and the presence
+of multiple groups. The results indicate that there is no significant
+difference between addiction level across school grades.
 
 ```{r barplot}
 # Barplot: mean Addiction_Level by Gender with SD error bars
@@ -359,7 +403,9 @@ ggplot(df_train, aes(x = Gender, y = Addiction_Level)) +
   ) +
   theme_minimal(base_size = 12)
 ```
-Addiction level seems to be consistent across all genders - there are no significant differences based on the plot output.
+
+Addiction level seems to be consistent across all genders - there are no
+significant differences based on the plot output.
 
 ```{r histogram}
 # Histogram with density curve (KDE equivalent)
@@ -373,7 +419,12 @@ ggplot(df_train, aes(x = Daily_Usage_Hours)) +
   ) +
   theme_minimal(base_size = 12)
 ```
-The plot shows that most people spend around 4 to 6 hours per day using screens. The highest frequency is in this range, while very low and very high screen time values occur less often. Overall, daily screen time is concentrated around moderate usage levels, with only a few users spending more than 8 hours per day.
+
+The plot shows that most people spend around 4 to 6 hours per day using
+screens. The highest frequency is in this range, while very low and very
+high screen time values occur less often. Overall, daily screen time is
+concentrated around moderate usage levels, with only a few users
+spending more than 8 hours per day.
 
 ```{r violin2}
 # Violin plot of Addiction_Level by Age
@@ -386,7 +437,8 @@ ggplot(df_train, aes(x = factor(Age), y = Addiction_Level, fill = factor(Age))) 
   theme(axis.text.x = element_text(angle = 90))
 ```
 
-Addiction level seems to be consistent across all age groups - there are no significant differences based on the plot output.
+Addiction level seems to be consistent across all age groups - there are
+no significant differences based on the plot output.
 
 ```{r by age}
 # Group by Age and compute mean Family_Communication
@@ -408,7 +460,11 @@ ggplot(grouped_df, aes(x = Age, y = Family_Communication)) +
   theme(panel.grid.minor = element_blank())
 ```
 
-The line plot shows how average family communication changes with age. The score increases slightly from age 13 to 16 and reaches its highest value at age 17. After that, it decreases for ages 18 and 19. Overall, family communication appears relatively stable across ages, with a small peak in mid-to-late adolescence.
+The line plot shows how average family communication changes with age.
+The score increases slightly from age 13 to 16 and reaches its highest
+value at age 17. After that, it decreases for ages 18 and 19. Overall,
+family communication appears relatively stable across ages, with a small
+peak in mid-to-late adolescence.
 
 ```{r plot 2}
 # Group by Age and compute mean Depression_Level
@@ -429,7 +485,9 @@ ggplot(grouped_df, aes(x = Age, y = Depression_Level)) +
   theme_minimal(base_size = 12)
 ```
 
-Based on the plot, depression levels appear to increase between ages 13 and 15, followed by a decline at age 16. Afterward, there is a rise in depression levels up to age 18, which then decreases at age 19
+Based on the plot, depression levels appear to increase between ages 13
+and 15, followed by a decline at age 16. Afterward, there is a rise in
+depression levels up to age 18, which then decreases at age 19
 
 ```{r plot 3}
 # Filter dataset for specific usage hours
@@ -455,7 +513,10 @@ ggplot(purpose_counts, aes(x = "", y = n, fill = Phone_Usage_Purpose)) +
   theme(legend.title = element_blank())
 ```
 
-The chart shows how students use their phones in a day, with 30.4% spent on social media, 25.0% on other activities, and 23.2% on education. Browsing takes up 14.3%, and gaming is the least at 7.1%. Social media is the most popular activity, followed by educational use.
+The chart shows how students use their phones in a day, with 30.4% spent
+on social media, 25.0% on other activities, and 23.2% on education.
+Browsing takes up 14.3%, and gaming is the least at 7.1%. Social media
+is the most popular activity, followed by educational use.
 
 ```{r plot 4}
 # Group by Exercise_Hours and compute mean Addiction_Level
@@ -476,7 +537,12 @@ ggplot(grouped_df, aes(x = Exercise_Hours, y = Addiction_Level)) +
   theme(panel.grid.minor = element_blank())
 ```
 
-The line graph shows the relationship between exercise hours and addiction level. When exercise hours are low, the addiction level stays high (around 9). As exercise hours increase, the addiction level generally goes down, showing that exercising more may help reduce addiction. However, the graph has a few sudden spikes and drops, which means the trend is not perfectly smooth.
+The line graph shows the relationship between exercise hours and
+addiction level. When exercise hours are low, the addiction level stays
+high (around 9). As exercise hours increase, the addiction level
+generally goes down, showing that exercising more may help reduce
+addiction. However, the graph has a few sudden spikes and drops, which
+means the trend is not perfectly smooth.
 
 ```{r plot 5}
 # Group by Time_on_Social_Media and compute mean Academic_Performance
@@ -497,7 +563,10 @@ ggplot(grouped_df, aes(x = Time_on_Social_Media, y = Academic_Performance)) +
   theme(panel.grid.minor = element_blank())
 ```
 
-This graph suggests that time on social media doesn’t have a clear or consistent impact on academic performance. The relationship seems to be more unpredictable, with academic performance fluctuating regardless of social media use.
+This graph suggests that time on social media doesn’t have a clear or
+consistent impact on academic performance. The relationship seems to be
+more unpredictable, with academic performance fluctuating regardless of
+social media use.
 
 ```{r plot 6}
 ggplot(df_train, aes(x = factor(Parental_Control), y = Addiction_Level)) +
@@ -511,7 +580,8 @@ ggplot(df_train, aes(x = factor(Parental_Control), y = Addiction_Level)) +
   theme_minimal()
 ```
 
-Addiction level seems to be consistent across both groups - there are no significant differences based on the plot output.
+Addiction level seems to be consistent across both groups - there are no
+significant differences based on the plot output.
 
 ```{r plot 7}
 #numeric columns selection
@@ -531,7 +601,8 @@ wrap_plots(plot_list)
 
 # Section 4: Feature Engineering
 
-We'll create derived features to capture behavioral patterns, reduce dimensionality, and improve model performance.
+We'll create derived features to capture behavioral patterns, reduce
+dimensionality, and improve model performance.
 
 ### One-hot-encoding on Gender, School_Grade & Phone_Usage_Purpose
 
@@ -549,3 +620,78 @@ str(df_train)
 
 ```
 
+### Additional features
+
+We created additional features to better capture behavioral patterns
+related to smartphone usage, including usage intensity, night-time
+activity, and lifestyle balance.
+
+-   **Total_Phone_Time** – total daily time spent on the phone, calculated
+    as the sum of social media, gaming, and educational usage. It
+    represents overall smartphone exposure.
+-   **Checks_per_Hour** – the number of phone checks normalized by daily
+    usage hours, capturing compulsive checking behavior rather than long
+    continuous sessions.
+-   **Night_Usage_Ratio** – the proportion of total phone usage that occurs
+    before bedtime, reflecting potentially unhealthy night-time usage
+    patterns.
+-   **Digital_Life_Balance** – a ratio combining sleep and physical activity
+    relative to phone usage, indicating the balance between offline
+    lifestyle and digital behavior.
+-   **Entertainment_to_Education_Ratio** – the relationship between
+    entertainment-related phone use (social media and gaming) and
+    educational use, distinguishing productive from leisure-oriented
+    behavior.
+-   **Exercise_Level** – a categorical variable derived from weekly exercise
+    hours, grouping physical activity into very low, low, moderate, and
+    high levels to improve interpretability.
+    
+```{r new features}
+df_train$Total_Phone_Time <- df_train$Time_on_Social_Media + df_train$Time_on_Gaming + df_train$Time_on_Education
+df_train$Checks_per_Hour <- df_train$Phone_Checks_Per_Day / (df_train$Daily_Usage_Hours + 1e-12)
+df_train$Night_Usage_Ratio <- df_train$Screen_Time_Before_Bed / (df_train$Daily_Usage_Hours + 1e-12)
+df_train$Digital_Life_Balance <- (df_train$Exercise_Hours + df_train$Sleep_Hours) / (df_train$Daily_Usage_Hours + 1e-12)
+
+df_train$Entertainment_to_Education_Ratio <-(df_train$Time_on_Social_Media + df_train$Time_on_Gaming) / (df_train$Time_on_Education + 1e-12)
+
+df_train$Exercise_Level <- cut(df_train$Exercise_Hours, breaks = c(-1, 1, 3, 6, 20), labels = c("Very Low", "Low", "Moderate", "High"))
+exercise_dummies <- model.matrix(~ Exercise_Level, data = df_train) |>as.data.frame()
+exercise_dummies <- exercise_dummies[, !names(exercise_dummies) %in% "(Intercept)"]
+df_train <- cbind(df_train[, !names(df_train) %in% "Exercise_Level"], exercise_dummies)
+
+```
+
+At this step for python version from Machine Learning 1 course we've taken code for downcasting our dataframe. The function downcast_dataframe() is used to reduce the memory usage of a DataFrame by converting each column to the smallest possible data type that can still hold all its values. Downcasting can reduce memory usage by 50–90%. 
+
+In **R version** we decided to omit this function - R primarily operates with just two numeric types (integer and double), and more granular downcasting is not easily supported and would require additional packages. Taking into consideration our small dataset and very little potential memory savings the change would be neglible. 
+
+```{r ensuring test set}
+# Apply same transformations to test set
+
+#drop location
+df_test <- df_test[, !names(df_test) %in% "Location"]
+
+#one-hot
+test_dummies <- model.matrix(~ Gender + School_Grade + Phone_Usage_Purpose, data = df_test) |> as.data.frame()
+test_dummies <- test_dummies[, !names(test_dummies) %in% "(Intercept)"]
+df_test <- cbind(df_test[, !names(df_test) %in% c("Gender", "School_Grade", "Phone_Usage_Purpose")], test_dummies)
+
+#new features
+df_test$Total_Phone_Time <- df_test$Time_on_Social_Media + df_test$Time_on_Gaming + df_test$Time_on_Education
+df_test$Checks_per_Hour <- df_test$Phone_Checks_Per_Day / (df_test$Daily_Usage_Hours + 1e-12)
+df_test$Night_Usage_Ratio <- df_test$Screen_Time_Before_Bed / (df_test$Daily_Usage_Hours + 1e-12)
+df_test$Digital_Life_Balance <- (df_test$Exercise_Hours + df_test$Sleep_Hours) / (df_test$Daily_Usage_Hours + 1e-12)
+
+df_test$Entertainment_to_Education_Ratio <- (df_test$Time_on_Social_Media + df_test$Time_on_Gaming) /     (df_test$Time_on_Education + 1e-3)
+
+df_test$Exercise_Level <- cut( df_test$Exercise_Hours, breaks = c(-1, 1, 3, 6, 20), labels = c("Very Low", "Low", "Moderate", "High"))
+exercise_dummies_test <- model.matrix(~ Exercise_Level, data = df_test) |> as.data.frame()
+exercise_dummies_test <- exercise_dummies_test[, !names(exercise_dummies_test) %in% "(Intercept)"]
+df_test <- cbind(df_test[, !names(df_test) %in% "Exercise_Level"], exercise_dummies_test)
+
+```
+
+```{r contains}
+setdiff(names(df_train), names(df_test))
+setdiff(names(df_test), names(df_train))
+```
