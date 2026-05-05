@@ -136,7 +136,7 @@ Now as we have don't have missing values, we are going to remove unnecessary col
 
 Now we'll remove unnecessary columns and split the data into training and test sets. Then, we'll apply one-hot encoding to categorical variables.
 
-## Step 1: Remove non-informative columns
+### Step 1: Remove non-informative columns
 
 Columns like 'Name' and 'ID' don't contribute to predictions since they are just identifiers. We'll drop them to reduce noise.
 
@@ -145,7 +145,7 @@ Columns like 'Name' and 'ID' don't contribute to predictions since they are just
 df <- df %>% select(-Name, -ID)
 ```
 
-## Step 2: Train-Test Split
+### Step 2: Train-Test Split
 
 We split the data into 80% training and 20% testing sets. Using random_state=123, which ensures reproducibility.
 
@@ -168,7 +168,7 @@ head(df_test)
 cat("SHAPE:", dim(df_test), "\n")
 ```
 
-## Step 3: Analyze data types and cardinality
+### Step 3: Analyze data types and cardinality
 
 Let's examine the data types and unique values for each column to identify categorical variables that need encoding.
 
@@ -385,6 +385,7 @@ ggplot(df_train, aes(x = factor(Age), y = Addiction_Level, fill = factor(Age))) 
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90))
 ```
+
 Addiction level seems to be consistent across all age groups - there are no significant differences based on the plot output.
 
 ```{r by age}
@@ -406,6 +407,7 @@ ggplot(grouped_df, aes(x = Age, y = Family_Communication)) +
   theme_minimal(base_size = 12) +
   theme(panel.grid.minor = element_blank())
 ```
+
 The line plot shows how average family communication changes with age. The score increases slightly from age 13 to 16 and reaches its highest value at age 17. After that, it decreases for ages 18 and 19. Overall, family communication appears relatively stable across ages, with a small peak in mid-to-late adolescence.
 
 ```{r plot 2}
@@ -426,6 +428,7 @@ ggplot(grouped_df, aes(x = Age, y = Depression_Level)) +
   ) +
   theme_minimal(base_size = 12)
 ```
+
 Based on the plot, depression levels appear to increase between ages 13 and 15, followed by a decline at age 16. Afterward, there is a rise in depression levels up to age 18, which then decreases at age 19
 
 ```{r plot 3}
@@ -451,6 +454,7 @@ ggplot(purpose_counts, aes(x = "", y = n, fill = Phone_Usage_Purpose)) +
   theme_void() +
   theme(legend.title = element_blank())
 ```
+
 The chart shows how students use their phones in a day, with 30.4% spent on social media, 25.0% on other activities, and 23.2% on education. Browsing takes up 14.3%, and gaming is the least at 7.1%. Social media is the most popular activity, followed by educational use.
 
 ```{r plot 4}
@@ -471,6 +475,7 @@ ggplot(grouped_df, aes(x = Exercise_Hours, y = Addiction_Level)) +
   theme_minimal(base_size = 14) +
   theme(panel.grid.minor = element_blank())
 ```
+
 The line graph shows the relationship between exercise hours and addiction level. When exercise hours are low, the addiction level stays high (around 9). As exercise hours increase, the addiction level generally goes down, showing that exercising more may help reduce addiction. However, the graph has a few sudden spikes and drops, which means the trend is not perfectly smooth.
 
 ```{r plot 5}
@@ -495,7 +500,6 @@ ggplot(grouped_df, aes(x = Time_on_Social_Media, y = Academic_Performance)) +
 This graph suggests that time on social media doesn’t have a clear or consistent impact on academic performance. The relationship seems to be more unpredictable, with academic performance fluctuating regardless of social media use.
 
 ```{r plot 6}
-# Violin plot: Addiction_Level by Parental_Control
 ggplot(df_train, aes(x = factor(Parental_Control), y = Addiction_Level)) +
   geom_violin(fill = "#1fa187", color = "#1fa187") +
   geom_boxplot(width = 0.1, alpha = 0.4) +
@@ -506,13 +510,14 @@ ggplot(df_train, aes(x = factor(Parental_Control), y = Addiction_Level)) +
   ) +
   theme_minimal()
 ```
+
 Addiction level seems to be consistent across both groups - there are no significant differences based on the plot output.
 
 ```{r plot 7}
-# Select numeric columns
+#numeric columns selection
 num_df <- df_train %>% select(where(is.numeric))
 
-# Create list of plots
+#plots
 plot_list <- lapply(names(num_df), function(col) {
   ggplot(num_df, aes(x = .data[[col]])) +
     geom_histogram(bins = 20, fill = "#b5de2b", color = "#b5de2b") +
@@ -520,6 +525,27 @@ plot_list <- lapply(names(num_df), function(col) {
     theme_minimal(base_size = 6)
 })
 
-# Combine plots
+#combine plots
 wrap_plots(plot_list)
 ```
+
+# Section 4: Feature Engineering
+
+We'll create derived features to capture behavioral patterns, reduce dimensionality, and improve model performance.
+
+### One-hot-encoding on Gender, School_Grade & Phone_Usage_Purpose
+
+```{r one-hot encoding1}
+
+df_train_encoded <- model.matrix(~ Gender + School_Grade + Phone_Usage_Purpose, data = df_train) |> as.data.frame()
+
+df_train_encoded <- df_train_encoded[, !names(df_train_encoded) %in% "(Intercept)"]
+
+#keeping only encoded
+df_train <- cbind(df_train[, !names(df_train) %in% c("Gender", "School_Grade", "Phone_Usage_Purpose")],
+            df_train_encoded)
+
+str(df_train)
+
+```
+
