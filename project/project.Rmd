@@ -4,17 +4,17 @@ author: "Aleksandra Dobosz, Aleksandra Engel, Adam Gonet, Kamil Laskowski"
 date: "2026-05-04"
 output: 
   html_document:
-    code_folding: hide
+    code_folding: show
     toc: true
     toc_float:
       toc_collapsed: true
     toc_depth: 6
     number_sections: false
-    theme: readable
+    theme: flatly
   pdf_document:
     toc: true
     toc_depth: '5'
-    highlight: tango
+    highlight: espresso
 editor_options: 
   markdown: 
     wrap: 72
@@ -41,41 +41,47 @@ have the greatest impact on smartphone addiction levels.
 
 ## Column Descriptions
 
-Demographic Information - **ID**: Unique identifier for each student\
+Demographic Information 
+
+- **ID**: Unique identifier for each student\
 - **Name**: Name of the student\
 - **Age**: Age of the teenager\
 - **Gender**: Gender of the student\
 - **Location**: Geographic location\
 - **School_Grade**: Current academic or level
 
-Smartphone Usage & Time Distribution - **Daily_Usage_Hours**: Average
-smartphone usage per day (hours)\
+Smartphone Usage & Time Distribution 
+
+- **Daily_Usage_Hours**: Average smartphone usage per day (hours)\
 - **Weekend_Usage_Hours**: Average smartphone usage on weekends\
 - **Screen_Time_Before_Bed**: Screen time before going to sleep\
 - **Phone_Checks_Per_Day**: Number of times the phone is checked daily\
 - **Apps_Used_Daily**: Number of apps used per day
 
-Activity-Based Usage - **Time_on_Social_Media**: Hours spent on social
-media platforms\
+Activity-Based Usage 
+
+- **Time_on_Social_Media**: Hours spent on social media platforms\
 - **Time_on_Gaming**: Hours spent on mobile gaming\
 - **Time_on_Education**: Hours spent on educational activities\
 - **Phone_Usage_Purpose**: Primary purpose of smartphone usage
 
-Health & Lifestyle Indicators - **Sleep_Hours**: Average hours of sleep
-per day\
+Health & Lifestyle Indicators 
+
+- **Sleep_Hours**: Average hours of sleep per day\
 - **Exercise_Hours**: Time spent on physical exercise\
 - **Anxiety_Level**: Indicator of anxiety level\
 - **Depression_Level**: Indicator of depression level\
 - **Self_Esteem**: Self-esteem score
 
-Social & Family Factors - **Social_Interactions**: Level of in-person
-social interaction\
-- **Family_Communication**: Quality or frequency of communication with
-family\
+Social & Family Factors 
+
+- **Social_Interactions**: Level of in-person social interaction\
+- **Family_Communication**: Quality or frequency of communication with family\
 - **Parental_Control**: Level of parental monitoring or restrictions
 
-Outcome Variables - **Academic_Performance**: Indicator of academic
-performance\
+Outcome Variables 
+
+- **Academic_Performance**: Indicator of academic performance\
 - **Addiction_Level**: Level of smartphone addiction (target variable)
 
 ------------------------------------------------------------------------
@@ -97,7 +103,7 @@ teenagers.
 
 # Importing neccessary libraries
 
-```{r setup}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 library(dplyr)
@@ -184,12 +190,10 @@ df_train <- df[index, ]
 df_test  <- df[-index, ]
 
 # Display training set
-cat("\nTRAIN:\n")
 head(df_train)
 cat("SHAPE:", dim(df_train), "\n")
 
 # Display test set
-cat("\nTEST:\n")
 head(df_test)
 cat("SHAPE:", dim(df_test), "\n")
 ```
