@@ -22,6 +22,12 @@ editor_options:
 
 # Teen Smartphone Usage and Addiction Impact Dataset
 
+## About the Project
+
+This is an R version of project conducted for Machine Learning project in Python. All codes are fully converted into R version, comments and descriptions for preparation and modelling parts are taken from the python version of this project. 
+
+This version is additionally extended by adding additional data and prediction on this new set of data. This is the last part of this report. The goal is to check and experiment how ML modelling is different in R and if the model can achieve satisfactory results on randomly generated data. 
+
 ## About the Dataset
 
 This dataset, sourced from Kaggle, focuses on understanding **smartphone
@@ -139,21 +145,21 @@ analysis to understand the data structure, identify potential issues,
 and assess data quality.
 
 ```{r info}
-# Print dataset dimensions (rows and columns)
+# print dataset dimensions (rows and columns)
 cat("Dataset shape:", dim(df), "\n")
 
-# Display first few rows of the dataset
+# display first few rows of the dataset
 head(df)
 ```
 
 ```{r summary}
-# Descriptive statistics of the dataset
+# descriptive statistics of the dataset
 summary(df)
 
-# Count duplicated rows in the dataset
+# count duplicated rows in the dataset
 sum(duplicated(df))
 
-# Count missing values in each column
+# count missing values in each column
 colSums(is.na(df))
 ```
 
@@ -172,7 +178,7 @@ Columns like 'Name' and 'ID' don't contribute to predictions since they
 are just identifiers. We'll drop them to reduce noise.
 
 ```{r remove columns}
-# Remove selected columns using dplyr
+# remove selected columns using dplyr
 df <- df %>% select(-Name, -ID)
 ```
 
@@ -189,11 +195,11 @@ index <- createDataPartition(df[[1]], p = 0.8, list = FALSE)
 df_train <- df[index, ]
 df_test  <- df[-index, ]
 
-# Display training set
+# display training set
 head(df_train)
 cat("SHAPE:", dim(df_train), "\n")
 
-# Display test set
+# display test set
 head(df_test)
 cat("SHAPE:", dim(df_test), "\n")
 ```
@@ -204,20 +210,20 @@ Let's examine the data types and unique values for each column to
 identify categorical variables that need encoding.
 
 ```{r data structure}
-# Structure of dataset
+# structure of dataset
 glimpse(df_train)
 
-# Unique values
+# unique values
 unique(df_train$School_Grade)
 unique(df_train$Gender)
 
-# Count unique values
+# count unique values
 n_distinct(df_train$Location)
 
-# Remove column
+# remove column
 df_train <- df_train %>% select(-Location)
 
-# Unique values
+# unique values
 unique(df_train$Phone_Usage_Purpose)
 ```
 
@@ -247,9 +253,7 @@ ggplot(corr_melt, aes(Var1, Var2, fill = value)) +
   geom_tile(color = "white") +
   scale_fill_viridis_c() +
   theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(
     title = "Kendall Correlation Heatmap",
     x = "",
@@ -670,7 +674,7 @@ At this step for python version from Machine Learning 1 course we've taken code 
 In **R version** we decided to omit this function - R primarily operates with just two numeric types (integer and double), and more granular downcasting is not easily supported and would require additional packages. Taking into consideration our small dataset and very little potential memory savings the change would be neglible. 
 
 ```{r ensuring test set}
-# Apply same transformations to test set
+#apply same transformations to test set
 
 #drop location
 df_test <- df_test[, !names(df_test) %in% "Location"]
@@ -699,3 +703,13 @@ df_test <- cbind(df_test[, !names(df_test) %in% "Exercise_Level"], exercise_dumm
 setdiff(names(df_train), names(df_test))
 setdiff(names(df_test), names(df_train))
 ```
+
+# Section 5: Model Training with Decision Tree Regressor
+
+We'll build a Decision Tree Regressor with hyperparameter tuning using GridSearchCV and 5-fold cross-validation.
+
+Reason for choosing this model for our problem:
+
+Baseline model - Trees are interpretable and capture non-linear relationships without requiring feature scaling
+Feature importance - Directly reveals which variables matter most for predicting addiction
+No assumptions - Unlike linear models, doesn't assume linear relationships between predictors and addiction level
