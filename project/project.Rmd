@@ -713,3 +713,105 @@ Reason for choosing this model for our problem:
 Baseline model - Trees are interpretable and capture non-linear relationships without requiring feature scaling
 Feature importance - Directly reveals which variables matter most for predicting addiction
 No assumptions - Unlike linear models, doesn't assume linear relationships between predictors and addiction level
+```{r}
+# Separate predictors and target variable
+
+x_train <- df_train %>%
+  select(-Addiction_Level)
+
+y_train <- df_train$Addiction_Level
+
+x_test <- df_test %>%
+  select(-Addiction_Level)
+
+y_test <- df_test$Addiction_Level
+```
+
+
+```{r cross_validation}
+set.seed(42)
+
+cv_control <- trainControl(
+  method = "cv",
+  number = 5
+)
+```
+
+
+```{r remove_zero_variance}
+# create copies for modeling
+df_train_model <- df_train
+df_test_model <- df_test
+
+# remove target before NZV check
+predictors_train <- df_train_model %>%
+  select(-Addiction_Level)
+
+predictors_test <- df_test_model %>%
+  select(-Addiction_Level)
+
+# detect near-zero variance predictors
+nzv <- nearZeroVar(predictors_train)
+
+# remove problematic predictors
+if(length(nzv) > 0){
+  predictors_train <- predictors_train[, -nzv]
+  predictors_test <- predictors_test[, -nzv]
+}
+
+# add target back
+df_train_model <- cbind(
+  Addiction_Level = df_train_model$Addiction_Level,
+  predictors_train
+)
+
+df_test_model <- cbind(
+  Addiction_Level = df_test_model$Addiction_Level,
+  predictors_test
+)
+
+cat("Removed predictors:", length(nzv), "\n")
+
+# sanity check
+"Addiction_Level" %in% names(df_train_model)
+
+
+
+```
+```{r decision_tree_model}
+library(rpart)
+library(rpart.plot)
+
+set.seed(42)
+
+dt_model <- rpart(
+  Addiction_Level ~ .,
+  data = df_train_model,
+  method = "anova",
+  control = rpart.control(
+    minsplit = 2,
+    minbucket = 5,
+    cp = 0,
+    maxdepth = 30
+  )
+)
+
+rpart.plot(dt_model)
+```
+```{r evaluation_chunk}
+# Predictions
+dt_predictions <- predict(
+  dt_model,
+  newdata = df_test_model
+)
+
+# Metrics
+dt_results <- postResample(
+  pred = dt_predictions,
+  obs = df_test_model$Addiction_Level
+)
+
+print(dt_results)
+```
+The R implementation achieved performance metrics comparable to the original Python model. Although slight differences were observed (likely due to implementation differences between DecisionTreeRegressor in scikit-learn and rpart in R), the overall predictive performance remained similar, confirming successful model reproduction.
+The Decision Tree achieved strong predictive performance with an R² of 0.696, meaning it explains 69.6% of the variance in addiction levels. On average, predictions deviate by 0.539 points (MAE) from actual addiction scores. 
