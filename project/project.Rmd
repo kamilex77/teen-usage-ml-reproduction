@@ -125,6 +125,7 @@ library(googledrive)
 if (!requireNamespace("googledrive", quietly = TRUE)) {install.packages("googledrive")}
 if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
 if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+if (!requireNamespace("gbm", quietly = TRUE)) install.packages("gbm")
 
 library(dplyr)
 library(ggplot2)
@@ -713,6 +714,8 @@ Reason for choosing this model for our problem:
 Baseline model - Trees are interpretable and capture non-linear relationships without requiring feature scaling
 Feature importance - Directly reveals which variables matter most for predicting addiction
 No assumptions - Unlike linear models, doesn't assume linear relationships between predictors and addiction level
+
+## Step 1: Prepare training and test data
 ```{r}
 # Separate predictors and target variable
 
@@ -815,3 +818,116 @@ print(dt_results)
 ```
 The R implementation achieved performance metrics comparable to the original Python model. Although slight differences were observed (likely due to implementation differences between DecisionTreeRegressor in scikit-learn and rpart in R), the overall predictive performance remained similar, confirming successful model reproduction.
 The Decision Tree achieved strong predictive performance with an R² of 0.696, meaning it explains 69.6% of the variance in addiction levels. On average, predictions deviate by 0.539 points (MAE) from actual addiction scores. 
+
+# Section 6: Model Training with Random Forest Regressor
+
+Random Forest builds multiple decision trees and averages predictions for better generalization.
+
+Reason for choosing this model for our problem: 
+- Reduces overfitting - Multiple trees with bootstrapped samples and feature randomness create robust predictions
+- Feature importance ranking - Aggregates importance across all trees, giving reliable feature rankings
+- Robust to outliers - our target variable distribution has skewness and outliers and Random Forest is less sensitive for them
+
+```{r random_forest_model}
+library(randomForest)
+
+set.seed(42)
+
+names(df_train_model)[
+  names(df_train_model) == "Phone_Usage_PurposeSocial Media"
+] <- "Phone_Usage_PurposeSocialMedia"
+
+names(df_test_model)[
+  names(df_test_model) == "Phone_Usage_PurposeSocial Media"] <- "Phone_Usage_PurposeSocialMedia"
+```
+
+
+```{r random_forest_model}
+
+# Train Random Forest Regressor
+rf_model <- randomForest(
+  Addiction_Level ~ .,
+  data = df_train_model,
+  ntree = 400,         # n_estimators
+  mtry = floor(ncol(df_train_model[-1]) * 0.5),  # max_features = 0.5
+  nodesize = 1,        # min_samples_leaf = 1
+  importance = TRUE
+)
+
+print(rf_model)
+```
+
+```{r random_forest_evaluation}
+# Predictions
+rf_predictions <- predict(
+  rf_model,
+  newdata = df_test_model
+)
+
+# Metrics
+rf_results <- postResample(
+  pred = rf_predictions,
+  obs = df_test_model$Addiction_Level
+)
+
+print(rf_results)
+```
+This Random Forest model was successfully reproduced in R, achieving nearly identical predictive performance to the original Python implementation. Minor metric differences are expected due to implementation differences between scikit-learn and randomForest in R. 
+
+The Random Forest model significantly outperforms the Decision Tree, achieving an R² of 0.9016 (explaining 90.16% of variance in addiction levels) with a lower MAE of 0.371, demonstrating that ensemble methods with multiple trees and bootstrap sampling effectively reduce overfitting and capture complex behavioral patterns in smartphone addiction prediction.
+
+# Section 7: Model Training with AdaBoost Regressor
+
+AdaBoost builds an ensemble of weak learners, focusing on instances that previous models found difficult.
+
+Reason for choosing this model for our problem:
+- Sequential learning - Focuses on instances the previous model misclassified, reducing bias and variance
+- Handles difficult cases - Emphasizes harder-to-predict addiction levels, improving overall performance
+- Adaptive weighting - Learns which samples are most informative for addiction prediction task
+- Prevents underfitting - Particularly useful when simpler models underfit complex behavioral patterns
+
+```{r adaboost_model}
+library(gbm)
+
+set.seed(42)
+
+# Train boosting model
+
+ada_model <- gbm(
+  formula = Addiction_Level ~ .,
+  data = df_train_model,
+  distribution = "gaussian",
+  n.trees = 100,          # n_estimators
+  interaction.depth = 2, # max_depth = 2
+  shrinkage = 0.05,      # learning_rate
+  bag.fraction = 1.0,
+  cv.folds = 5,
+  verbose = FALSE
+)
+
+summary(ada_model)
+
+```
+```{r evaluation_adaboost}
+
+# Predictions
+ada_predictions <- predict(
+  ada_model,
+  newdata = df_test_model,
+  n.trees = 100
+)
+
+# Metrics
+ada_results <- postResample(
+  pred = ada_predictions,
+  obs = df_test_model$Addiction_Level
+)
+
+print(ada_results)
+```
+
+Due to implementation limitations of AdaBoost regression in R, a gradient boosting approach (gbm) was used as the closest available alternative. The reproduced model achieved improved predictive performance compared to the original Python implementation. 
+
+The boosting model in R achieved better predictive performance than the original Python implementation (RMSE = 0.739 vs. 1.003; R² = 0.804 vs. 0.564). This difference is likely explained by implementation differences, as the Python model relied on AdaBoostRegressor, whereas the R version used gradient boosting (gbm), which is generally more flexible and capable of capturing complex relationships in the data. 
+
+
