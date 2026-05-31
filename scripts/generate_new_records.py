@@ -1,7 +1,10 @@
 import pandas as pd
 import numpy as np
+from pathlib import Path
 
-df = pd.read_csv("scripts/teen_phone_addiction_dataset.csv")
+file_id = "1mJ-iLbHWiaPLHltrnIwjfNcbtW_4u8fd"
+url = f"https://drive.google.com/uc?export=download&id={file_id}"
+df = pd.read_csv(url)
 
 N_NEW = 500
 
@@ -64,10 +67,9 @@ synthetic_df["ID"] = range(len(df) + 1, len(df) + len(synthetic_df) + 1)
 synthetic_df["Name"] = ["Synthetic_" + str(i) for i in synthetic_df["ID"]]
 
 # Merging original and synthetic data
-final_df = pd.concat([df, synthetic_df], ignore_index=True)
-final_df = final_df.round(1)
+synthetic_df = synthetic_df.round(1)
 
-# Save the augmented dataset
-final_df.to_csv("scripts/teen_phone_addiction_dataset.csv", index=False)
+output_path = Path(__file__).resolve().parent / "new_records.csv"
+synthetic_df.to_csv(output_path, index=False)
 
-print("Completed! New dataset saved as teen_phone_addiction_dataset.csv")
+print(f"Completed! New records saved to {output_path}")

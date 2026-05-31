@@ -949,6 +949,83 @@ Due to implementation limitations of AdaBoost regression in R, a gradient boosti
 
 The boosting model in R achieved better predictive performance than the original Python implementation (RMSE = 0.739 vs. 1.003; R² = 0.804 vs. 0.564). This difference is likely explained by implementation differences, as the Python model relied on AdaBoostRegressor, whereas the R version used gradient boosting (gbm), which is generally more flexible and capable of capturing complex relationships in the data. 
 
-# Section 8: Prediction on added data 
 
+# Section 8: Predictions on added set of new data 
 
+Lastly in our project we wanted to check whether predictions on the generated data will be as good as on the original dataset. In our R pipline Random Forest was the best predictive performance, obtaining the lowest RMSE (0.527) and MAE (0.371). To check that we created the python scripts, which generates 500 new lines of observations each time. 
+
+This part was partially coded with the ChatGPT due to ensure reprudicibility on different enviroment not only on those used byt the authors.
+
+```{r, generated data predictions loading}
+
+# run script - requirements with fallbacks
+python_cmd <- Sys.which("python3")
+conda_python <- "/opt/anaconda3/bin/python"
+
+if (file.exists(conda_python)) {python_cmd <- conda_python}
+if (python_cmd == "") {stop("Python not found.")}
+
+script_path <- "../scripts/generate_new_records.py"
+
+if (!file.exists(script_path)) {stop("Script not found. Check your working directory with getwd().")}
+
+old_wd <- getwd()
+on.exit(setwd(old_wd))
+
+setwd("..")
+
+system2(python_cmd, "scripts/generate_new_records.py")
+
+```
+
+```{r, generated data predictions}
+new_records <- read.csv("../scripts/new_records.csv")
+
+# Cleaning 
+new_records_predictors <- new_records[, !names(new_records) %in% "Addiction_Level"]
+new_records_predictors <- new_records_predictors %>% select(-Name, -ID, -Location)
+
+# One-hot encoding like in training/test
+new_records_encoded <- model.matrix(~ Gender + School_Grade + Phone_Usage_Purpose, data = new_records_predictors) |> as.data.frame()
+new_records_encoded <- new_records_encoded[ , !names(new_records_encoded) %in% "(Intercept)"]
+new_records_model <- cbind(new_records_predictors[ , !names(new_records_predictors) %in% c("Gender", "School_Grade", "Phone_Usage_Purpose")], new_records_encoded)
+
+# Same new features
+new_records_model$Total_Phone_Time <- new_records_model$Time_on_Social_Media + new_records_model$Time_on_Gaming + new_records_model$Time_on_Education
+new_records_model$Checks_per_Hour <- new_records_model$Phone_Checks_Per_Day / (new_records_model$Daily_Usage_Hours + 1e-12)
+new_records_model$Night_Usage_Ratio <- new_records_model$Screen_Time_Before_Bed / (new_records_model$Daily_Usage_Hours + 1e-12)
+new_records_model$Digital_Life_Balance <- (new_records_model$Exercise_Hours + new_records_model$Sleep_Hours) / (new_records_model$Daily_Usage_Hours + 1e-12)
+new_records_model$Entertainment_to_Education_Ratio <- (new_records_model$Time_on_Social_Media + new_records_model$Time_on_Gaming) /(new_records_model$Time_on_Education + 1e-12)
+new_records_model$Exercise_Level <- cut(new_records_model$Exercise_Hours, breaks = c(-1, 1, 3, 6, 20), labels = c("Very Low", "Low", "Moderate", "High"))
+
+exercise_dummies_new <- model.matrix(~ Exercise_Level, data = new_records_model) |> as.data.frame()
+exercise_dummies_new <- exercise_dummies_new[, !names(exercise_dummies_new) %in% "(Intercept)"]
+new_records_model <- cbind(new_records_model[, !names(new_records_model) %in% "Exercise_Level"], exercise_dummies_new)
+
+# Fixing names like in training process
+names(new_records_model)[names(new_records_model) == "Phone_Usage_PurposeSocial Media"] <- "Phone_Usage_PurposeSocialMedia"
+model_features <- setdiff(names(df_train_model), "Addiction_Level")
+missing_cols <- setdiff(model_features, names(new_records_model))
+
+for (col in missing_cols) {
+  new_records_model[[col]] <- 0
+}
+
+new_records_model <- new_records_model[, model_features]
+
+# Prediction - RF
+new_records$Predicted_Addiction_Level <- predict(rf_model, newdata = new_records_model)
+
+# Metrics on generated data
+new_results <- postResample(pred = new_records$Predicted_Addiction_Level, obs = new_records$Addiction_Level)
+print(new_results)
+
+```
+
+```{r, comparison}
+metrics_comparison <- rbind(Original_Test_Set = rf_results, Generated_Data = new_results)
+print(metrics_comparison)
+
+```
+
+The genearted data consist of 500 new records. As we observed RF was great on the original datset, its performance is much worse on the synthetically generated dataset. This suggests that the generated observations are not fully in line with the relationships present in the original data. This simple script, which generates data in our experiment provided different distributions of the variables than in the original dataset. This led to reduced predictive power and shows that machine learning models generalize well only when new observations follow patterns similar to those present in the training data.
