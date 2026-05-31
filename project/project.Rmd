@@ -121,19 +121,16 @@ library(e1071)
 library(gridExtra)
 library(patchwork)
 library(googledrive)
-
-if (!requireNamespace("googledrive", quietly = TRUE)) {install.packages("googledrive")}
-if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
-if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
-if (!requireNamespace("gbm", quietly = TRUE)) install.packages("gbm")
-
-library(dplyr)
-library(ggplot2)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+library(gbm)
+library(viridis)
 
 ```
 
 ```{r download data from google drive}
-#path to google file with data 
+# path to google file with data 
 file_id <- "1mJ-iLbHWiaPLHltrnIwjfNcbtW_4u8fd"
 url <- paste0("https://drive.google.com/uc?export=download&id=", file_id)
 df <- read.csv(url)
@@ -278,7 +275,7 @@ other variables show only weak relationships.
 ### Dependent Variable Analysis
 
 ```{r target distribution}
-#summary statistics for target variable
+# summary statistics for target variable
 cat("Addiction_Level Statistics:\n")
 
 cat(" Mean:", mean(df_train$Addiction_Level, na.rm = TRUE), "\n")
@@ -289,7 +286,7 @@ cat(" Max:", max(df_train$Addiction_Level, na.rm = TRUE), "\n")
 cat(" Skewness:", skewness(df_train$Addiction_Level, na.rm = TRUE), "\n")
 cat(" Kurtosis:", kurtosis(df_train$Addiction_Level, na.rm = TRUE), "\n")
 
-#histogram of target variable
+# histogram of target variable
 ggplot(df_train, aes(x = Addiction_Level)) +
   geom_histogram(bins = 30, fill = "#21918c", color = "#21918c") +
   labs(
@@ -299,7 +296,7 @@ ggplot(df_train, aes(x = Addiction_Level)) +
   ) +
   theme_minimal()
 
-#skewness of target variable
+# skewness of target variable
 skewness(df_train$Addiction_Level, na.rm = TRUE)
 ```
 
@@ -356,17 +353,17 @@ skew_log <- skewness(log(df_train$Addiction_Level), na.rm = TRUE)
 kurt_log <- kurtosis(log(df_train$Addiction_Level), na.rm = TRUE)
 
 # Print results
-cat("Original:\n")
-cat(" Skewness:", skew_original, "\n")
-cat(" Kurtosis:", kurt_original, "\n\n")
+cat("Original:")
+cat(" Skewness:", skew_original)
+cat(" Kurtosis:", kurt_original)
 
-cat("Sqrt transformed:\n")
-cat(" Skewness:", skew_sqrt, "\n")
-cat(" Kurtosis:", kurt_sqrt, "\n\n")
+cat("Sqrt transformed:")
+cat(" Skewness:", skew_sqrt)
+cat(" Kurtosis:", kurt_sqrt)
 
-cat("Log transformed:\n")
-cat(" Skewness:", skew_log, "\n")
-cat(" Kurtosis:", kurt_log, "\n")
+cat("Log transformed:")
+cat(" Skewness:", skew_log)
+cat(" Kurtosis:", kurt_log)
 ```
 
 The target variable Addiction_Level will be modeled in its original
@@ -379,6 +376,7 @@ appropriate choice.
 ### Statistical Analysis
 
 ```{r violin}
+
 # Violin plot: distribution by school grade
 ggplot(df_train, aes(x = School_Grade, y = Addiction_Level)) +
   geom_violin(fill = "#7ad151", color = "#7ad151") +
@@ -401,6 +399,7 @@ of multiple groups. The results indicate that there is no significant
 difference between addiction level across school grades.
 
 ```{r barplot}
+
 # Barplot: mean Addiction_Level by Gender with SD error bars
 ggplot(df_train, aes(x = Gender, y = Addiction_Level)) +
   stat_summary(fun = mean, geom = "bar", fill = "#fde725") +
@@ -437,6 +436,7 @@ spending more than 8 hours per day.
 
 ```{r violin2}
 # Violin plot of Addiction_Level by Age
+
 ggplot(df_train, aes(x = factor(Age), y = Addiction_Level, fill = factor(Age))) +
   geom_violin(color = "black") +
   geom_boxplot(width = 0.1, alpha = 0.4) +
@@ -593,10 +593,10 @@ Addiction level seems to be consistent across both groups - there are no
 significant differences based on the plot output.
 
 ```{r plot 7}
-#numeric columns selection
+# Numeric columns selection
 num_df <- df_train %>% select(where(is.numeric))
 
-#plots
+# Plots
 plot_list <- lapply(names(num_df), function(col) {
   ggplot(num_df, aes(x = .data[[col]])) +
     geom_histogram(bins = 20, fill = "#b5de2b", color = "#b5de2b") +
@@ -604,7 +604,7 @@ plot_list <- lapply(names(num_df), function(col) {
     theme_minimal(base_size = 6)
 })
 
-#combine plots
+# Combine plots
 wrap_plots(plot_list)
 ```
 
@@ -621,7 +621,7 @@ df_train_encoded <- model.matrix(~ Gender + School_Grade + Phone_Usage_Purpose, 
 
 df_train_encoded <- df_train_encoded[, !names(df_train_encoded) %in% "(Intercept)"]
 
-#keeping only encoded
+# Keeping only encoded
 df_train <- cbind(df_train[, !names(df_train) %in% c("Gender", "School_Grade", "Phone_Usage_Purpose")],
             df_train_encoded)
 
@@ -675,17 +675,17 @@ At this step for python version from Machine Learning 1 course we've taken code 
 In **R version** we decided to omit this function - R primarily operates with just two numeric types (integer and double), and more granular downcasting is not easily supported and would require additional packages. Taking into consideration our small dataset and very little potential memory savings the change would be neglible. 
 
 ```{r ensuring test set}
-#apply same transformations to test set
+# Apply same transformations to test set
 
-#drop location
+# Drop location
 df_test <- df_test[, !names(df_test) %in% "Location"]
 
-#one-hot
+# One-hot
 test_dummies <- model.matrix(~ Gender + School_Grade + Phone_Usage_Purpose, data = df_test) |> as.data.frame()
 test_dummies <- test_dummies[, !names(test_dummies) %in% "(Intercept)"]
 df_test <- cbind(df_test[, !names(df_test) %in% c("Gender", "School_Grade", "Phone_Usage_Purpose")], test_dummies)
 
-#new features
+# New features
 df_test$Total_Phone_Time <- df_test$Time_on_Social_Media + df_test$Time_on_Gaming + df_test$Time_on_Education
 df_test$Checks_per_Hour <- df_test$Phone_Checks_Per_Day / (df_test$Daily_Usage_Hours + 1e-12)
 df_test$Night_Usage_Ratio <- df_test$Screen_Time_Before_Bed / (df_test$Daily_Usage_Hours + 1e-12)
@@ -782,8 +782,7 @@ cat("Removed predictors:", length(nzv), "\n")
 
 ```
 ```{r decision_tree_model}
-library(rpart)
-library(rpart.plot)
+
 
 set.seed(42)
 
@@ -799,8 +798,16 @@ dt_model <- rpart(
   )
 )
 
-rpart.plot(dt_model)
+
+
+rpart.plot(dt_model, 
+           type = 2,
+           extra = 101,
+           fallen.leaves = TRUE,
+           box.palette = viridis(100, option = "D")
+           )
 ```
+
 ```{r evaluation_chunk}
 # Predictions
 dt_predictions <- predict(
@@ -828,8 +835,7 @@ Reason for choosing this model for our problem:
 - Feature importance ranking - Aggregates importance across all trees, giving reliable feature rankings
 - Robust to outliers - our target variable distribution has skewness and outliers and Random Forest is less sensitive for them
 
-```{r random_forest_model}
-library(randomForest)
+```{r random_forest_model_v1}
 
 set.seed(42)
 
@@ -872,6 +878,7 @@ rf_results <- postResample(
 
 print(rf_results)
 ```
+
 This Random Forest model was successfully reproduced in R, achieving nearly identical predictive performance to the original Python implementation. Minor metric differences are expected due to implementation differences between scikit-learn and randomForest in R. 
 
 The Random Forest model significantly outperforms the Decision Tree, achieving an R² of 0.9016 (explaining 90.16% of variance in addiction levels) with a lower MAE of 0.371, demonstrating that ensemble methods with multiple trees and bootstrap sampling effectively reduce overfitting and capture complex behavioral patterns in smartphone addiction prediction.
@@ -887,8 +894,6 @@ Reason for choosing this model for our problem:
 - Prevents underfitting - Particularly useful when simpler models underfit complex behavioral patterns
 
 ```{r adaboost_model}
-library(gbm)
-
 set.seed(42)
 
 # Train boosting model
@@ -905,9 +910,23 @@ ada_model <- gbm(
   verbose = FALSE
 )
 
-summary(ada_model)
+# Debbuged with ChatGPT to match viridis
+
+imp <- summary(ada_model, plotit = FALSE)
+
+ggplot(imp,
+       aes(
+         x = reorder(var, rel.inf),
+         y = rel.inf)) +
+  geom_col(fill = viridis(1)) +
+  coord_flip() +
+  labs(
+    x = NULL,
+    y = "Relative Influence"
+    ) + theme_minimal()
 
 ```
+
 ```{r evaluation_adaboost}
 
 # Predictions
@@ -929,5 +948,7 @@ print(ada_results)
 Due to implementation limitations of AdaBoost regression in R, a gradient boosting approach (gbm) was used as the closest available alternative. The reproduced model achieved improved predictive performance compared to the original Python implementation. 
 
 The boosting model in R achieved better predictive performance than the original Python implementation (RMSE = 0.739 vs. 1.003; R² = 0.804 vs. 0.564). This difference is likely explained by implementation differences, as the Python model relied on AdaBoostRegressor, whereas the R version used gradient boosting (gbm), which is generally more flexible and capable of capturing complex relationships in the data. 
+
+# Section 8: Prediction on added data 
 
 
