@@ -80,4 +80,7 @@ The dataset is automatically downloaded from Google Drive using the file ID prov
 - Aleksandra Dobosz  
 - Aleksandra Engel  
 - Adam Gonet  
-- Kamil Laskowski  
+- Kamil Laskowski
+
+### AI disclousure 
+This readme and parts of coding (marked in file) were generated with ChatGPT. The outputs were checked by the authors. 
